@@ -21,7 +21,6 @@ last_run = {"at": None, "ok": None}
 
 
 def load_rows():
-    """Read data/final.csv and map it to the shape the dashboard expects."""
     if not FINAL.exists():
         return []
     with FINAL.open(newline="", encoding="utf-8") as f:

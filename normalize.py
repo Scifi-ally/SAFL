@@ -18,6 +18,6 @@ def norm_date(x):
 df = pd.read_csv("data/raw.csv")
 df["state"] = df.state_raw.map(norm_state)
 df[["date","date_precision"]] = df.published.apply(lambda x: pd.Series(norm_date(x)))
-df["title"] = df.title.str.replace(r"\s+-\s+[^-]+$","",regex=True)  # strip " - Publisher"
+df["title"] = df.title.str.replace(r"\s+-\s+[^-]+$","",regex=True)
 df.to_csv("data/normalized.csv", index=False)
 print(df.state.value_counts(), (df.date=="").sum())
