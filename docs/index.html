@@ -167,6 +167,12 @@ h1 {
   color: #dc2626;
   font-weight: 600;
 }
+.pipeline-output {
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 12px;
+}
 .stats-strip {
   display: flex;
   align-items: baseline;
@@ -389,26 +395,6 @@ a.feed-title:hover {
   text-align: center;
   font-size: 13px;
 }
-#log {
-  display: none;
-  position: absolute;
-  top: 60px;
-  right: 32px;
-  width: 480px;
-  max-height: 280px;
-  background: #000000;
-  color: #ffffff;
-  padding: 14px 16px;
-  font-size: 11px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-y: auto;
-  z-index: 99;
-}
-#log.open {
-  display: block;
-}
 footer {
   display: flex;
   justify-content: space-between;
@@ -451,7 +437,7 @@ footer {
 
   <div class="pipeline-row" id="pipeline">
     <ol class="steps-list" id="steps"></ol>
-    <span id="runMsg"></span>
+    <span class="pipeline-output" id="runMsg"></span>
   </div>
 
   <div class="stats-strip">
@@ -497,8 +483,6 @@ footer {
       <div class="feed-scroll" id="list"></div>
     </section>
   </div>
-
-  <pre id="log" aria-live="polite"></pre>
 
   <footer>
     <span>Public news feeds & verified state releases. Dates & state names normalized.</span>
@@ -615,9 +599,7 @@ footer {
     S.running = true;
     paintServer();
     renderSteps();
-    const log = $('#log');
-    log.textContent = '';
-    log.classList.add('open');
+    $('#runMsg').textContent = 'running...';
     let finished = false;
     let es;
     const end = async (msg, reload) => {
@@ -625,7 +607,6 @@ footer {
       finished = true;
       es.close();
       S.running = false;
-      setTimeout(() => log.classList.remove('open'), 4000);
       await checkServer();
       $('#runMsg').textContent = msg;
       if (reload) await loadData();
@@ -637,10 +618,9 @@ footer {
     });
     es.addEventListener('log', (e) => {
       const line = JSON.parse(e.data).line;
-      log.append(line + String.fromCharCode(10));
-      log.scrollTop = log.scrollHeight;
+      if (line) $('#runMsg').textContent = line;
     });
-    es.addEventListener('done', () => end('ok', true));
+    es.addEventListener('done', () => end('done', true));
     es.addEventListener('fail', (e) => end('err: ' + JSON.parse(e.data).message, false));
     es.onerror = () => end('disconnected', false);
   }

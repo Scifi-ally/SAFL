@@ -112,12 +112,10 @@ class Handler(SimpleHTTPRequestHandler):
                 stem = Path(name).stem
                 script = ROOT / name
                 if not script.exists():
-                    self.sse("log", {"line": f"[skip] {name} not found"})
                     self.sse("step", {"name": stem, "status": "skipped"})
                     continue
 
                 self.sse("step", {"name": stem, "status": "running"})
-                self.sse("log", {"line": f"$ python {name}"})
                 proc = subprocess.Popen(
                     [sys.executable, "-u", str(script)],
                     cwd=ROOT,
@@ -129,20 +127,22 @@ class Handler(SimpleHTTPRequestHandler):
                     env=env,
                 )
                 for line in proc.stdout:
-                    self.sse("log", {"line": line.rstrip()})
+                    clean = line.rstrip()
+                    if clean:
+                        self.sse("log", {"line": clean})
                 code = proc.wait()
 
                 if code != 0:
                     ok = False
                     self.sse("step", {"name": stem, "status": "error"})
-                    self.sse("fail", {"message": f"{name} exited with code {code}"})
+                    self.sse("fail", {"message": f"error {code}"})
                     break
                 self.sse("step", {"name": stem, "status": "done"})
 
             if ok:
                 self.sse("step", {"name": "export", "status": "running"})
                 n = export_json()
-                self.sse("log", {"line": f"[export] wrote {n} records to docs/data.json"})
+                self.sse("log", {"line": f"{n} records exported"})
                 self.sse("step", {"name": "export", "status": "done"})
                 self.sse("done", {"records": n})
         except Exception as exc:  
