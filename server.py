@@ -12,7 +12,8 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parent
 DOCS = ROOT / "docs"
 FINAL = ROOT / "data" / "final.csv"
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
+
 STEPS = ["fetch.py", "normalize.py", "classify.py", "dedupe.py"]
 STEP_NAMES = [Path(s).stem for s in STEPS] + ["export"]
 
